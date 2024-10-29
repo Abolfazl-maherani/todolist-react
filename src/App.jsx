@@ -12,7 +12,7 @@ function App() {
     }]);
     const [addBoardDialog, setAddBoardDialog] = useState(false);
     const [boardNameInput, setBoardNameInput] = useState("");
-    const [selectInputTask, setSelectInputTask] = useState(boards[0]?.boardName);
+    const [selectInputTask, setSelectInputTask] = useState(0);
     const [input, setInput] = useState('')
     const [editInfo, setEditInfo] = useState({
         index: null,
@@ -25,6 +25,7 @@ function App() {
     const clearInput = () => setInput('')
     // Function to add a task to a specific board
     const addTaskToBoard = (boardIndex, newTask) => {
+
         const updatedBoards = boards.map((board, index) => {
             if (index === boardIndex) {
                 return {...board, tasks: [...board.tasks, newTask]};
@@ -53,9 +54,10 @@ function App() {
     const submitTaskHandler = (e) => {
         e.preventDefault()
         if (input?.trim()) {
-            const indexOfBoard = boards?.findIndex(item => item.boardName === selectInputTask)
-            if (indexOfBoard !== -1) {
-                addTaskToBoard(indexOfBoard, input);
+
+            if (![null, undefined].includes(selectInputTask)) {
+
+                addTaskToBoard(selectInputTask, input);
                 clearInput()
 
             }
@@ -86,9 +88,10 @@ function App() {
                     setAddBoardDialog(true)
                 }
             }}>Create Board</BaseButton>
+
             <div className=" grid gap-3 grid-cols-4">
                 {boards?.length && boards.map((board, indexBoard) => {
-                    return <CardTask editable={editInfo.index !== null}
+                    return <CardTask key={indexBoard} editable={editInfo.index !== null}
                                      title={board.boardName}>
                         {({inputText, setInput}) => board?.tasks?.length ? board.tasks?.map((item, index) =>
                                 <CardTaskItem
@@ -107,13 +110,14 @@ function App() {
             <div className="fixed bottom-3 left-1/2 transform -translate-x-1/2 w-full max-w-xl mx-auto ">
                 <div className="flex w-full gap-2">
                     <form onSubmit={submitTaskHandler} className="flex w-full gap-2">
-                        <div className="relative shadow-md bg-[#eee] px-2 rounded-[8px]   w-full flex">
+                        <div className="relative shadow-md border-2 border-solid  border-black px-2 rounded-[8px]   w-full flex">
                             <input value={input} onChange={(e) => setInput(e.target.value)} placeholder="write task..."
                                    type="text"
                                    className="w-full outline-0 bg-transparent py-2 "/>
                             <hr className="w-[1px] h-[80%] my-1 mx-1 bg-[#bbb]"/>
+
                             <select
-                                value={selectInputTask} onChange={(e) => setSelectInputTask(e.target.value)}
+                                value={selectInputTask} onChange={(e) => setSelectInputTask(+e.target.value)}
                                 className=" bg-transparent outline-0 max-w-[80px] " name=""
                                 id="">
                                 {boards.map((board, index) => (
