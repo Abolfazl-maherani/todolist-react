@@ -1,6 +1,9 @@
 ## Getting Started
 
 To get a local copy up and running, follow these steps:
+## Live Demo
+
+You can view the live demo of this project [here](https://abolfazl-maherani.github.io/todolist-react/).
 
 ### Prerequisites
 
