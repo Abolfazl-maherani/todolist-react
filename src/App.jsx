@@ -15,7 +15,8 @@ function App() {
     const [selectInputTask, setSelectInputTask] = useState(0);
     const [input, setInput] = useState('')
     const [editInfo, setEditInfo] = useState({
-        index: null,
+        boardIndex: null,
+        taskIndex: null
 
     });
     // Function to add a new board
@@ -34,6 +35,20 @@ function App() {
         });
         setBoards(updatedBoards);
     };
+    const updateTaskOnBoard = (boardIndex, taskIndex, updateText) => {
+        setBoards(boards?.map((board, index) => {
+            if (index === boardIndex) {
+                return {
+                    ...board,
+                    tasks: board.tasks?.map((task, tIndex) => {
+                        if (tIndex === taskIndex) return updateText
+                        return task
+                    })
+                };
+            }
+            return board
+        }))
+    }
     const removeTaskOnBoard = (boardIndex, taskIndex) => {
         const updatedBoards = boards.map((board, index) => {
             if (index === boardIndex) {
@@ -48,25 +63,33 @@ function App() {
         setBoards(updatedBoards);
     };
 
-    const isEditableMode = useMemo(() => {
-        return editInfo.index !== null
-    }, [editInfo])
+    const isEditableMode = editInfo.boardIndex !== null
+
     const submitTaskHandler = (e) => {
         e.preventDefault()
         if (input?.trim()) {
 
             if (![null, undefined].includes(selectInputTask)) {
-
-                addTaskToBoard(selectInputTask, input);
+                if (!isEditableMode)
+                    addTaskToBoard(selectInputTask, input);
+                else {
+                    updateTaskOnBoard(editInfo.boardIndex, editInfo.taskIndex, input)
+                    setEditInfo({
+                        boardIndex: null,
+                        taskIndex: null
+                    })
+                }
                 clearInput()
+
 
             }
         }
     }
-    const editTaskOnBoardHandler = (boardIndex, taskIndex, setInput) => {
+    const editTaskOnBoardHandler = (boardIndex, taskIndex) => {
         const taskText = boards[boardIndex].tasks[taskIndex];
         setInput(taskText)
-        // setEditInfo({index: index})
+        setSelectInputTask(boardIndex)
+        setEditInfo({boardIndex: boardIndex, taskIndex: taskIndex})
 
     }
     const removeTaskOnBoardHandler = (boardIndex, taskIndex) => {
@@ -95,7 +118,7 @@ function App() {
                                      title={board.boardName}>
                         {({inputText, setInput}) => board?.tasks?.length ? board.tasks?.map((item, index) =>
                                 <CardTaskItem
-                                    editHandler={() => editTaskOnBoardHandler(indexBoard, index, setInput)}
+                                    editHandler={() => editTaskOnBoardHandler(indexBoard, index)}
                                     removeHandler={() => removeTaskOnBoard(indexBoard, index)}
                                     order={index + 1} key={index} title={item}/>) :
                             <div className="w-full h-full flex justify-center items-center text-[#444]">Empty
@@ -110,13 +133,15 @@ function App() {
             <div className="fixed bottom-3 left-1/2 transform -translate-x-1/2 w-full max-w-xl mx-auto ">
                 <div className="flex w-full gap-2">
                     <form onSubmit={submitTaskHandler} className="flex w-full gap-2">
-                        <div className="relative shadow-md border-2 border-solid  border-black px-2 rounded-[8px]   w-full flex">
+                        <div
+                            className="relative shadow-md border-2 border-solid  border-black px-2 rounded-[8px]   w-full flex">
                             <input value={input} onChange={(e) => setInput(e.target.value)} placeholder="write task..."
                                    type="text"
                                    className="w-full outline-0 bg-transparent py-2 "/>
                             <hr className="w-[1px] h-[80%] my-1 mx-1 bg-[#bbb]"/>
 
                             <select
+                                disabled={isEditableMode}
                                 value={selectInputTask} onChange={(e) => setSelectInputTask(+e.target.value)}
                                 className=" bg-transparent outline-0 max-w-[80px] " name=""
                                 id="">
@@ -125,7 +150,9 @@ function App() {
                             </select>
                         </div>
                         <button
-                            className="bg-green-800 shadow-md inline-flex items-center justify-center px-3 rounded-[8px] text-white text-[13px]">Submit
+                            className="bg-green-800 shadow-md inline-flex items-center justify-center px-3 rounded-[8px] text-white text-[13px]">
+                            {isEditableMode ? 'Edit' : 'Submit'}
+
                         </button>
                     </form>
                 </div>
